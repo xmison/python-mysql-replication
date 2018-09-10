@@ -137,6 +137,7 @@ class BinLogStreamReader(object):
                  report_slave=None, slave_uuid=None,
                  pymysql_wrapper=None,
                  fail_on_table_metadata_unavailable=False,
+                 stop_to_timestamp=None,
                  slave_heartbeat=None):
         """
         Attributes:
@@ -201,6 +202,7 @@ class BinLogStreamReader(object):
         self.log_file = log_file
         self.auto_position = auto_position
         self.skip_to_timestamp = skip_to_timestamp
+        self.stop_to_timestamp = stop_to_timestamp
 
         if report_slave:
             self.report_slave = ReportSlave(report_slave)
@@ -477,6 +479,9 @@ class BinLogStreamReader(object):
             #   There are conditions under which the terminating
             #   log-rotation event does not occur. For example, the server
             #   might crash.
+            if self.stop_to_timestamp and binlog_event.timestamp > self.stop_to_timestamp:
+                break
+                
             if self.skip_to_timestamp and binlog_event.timestamp < self.skip_to_timestamp:
                 continue
 
